@@ -1,0 +1,63 @@
+{
+  "name": "Example grid - 10 bus meshed 300/132 kV system",
+  "version": "1.2",
+  "base": {
+    "s_base_mva": 100.0,
+    "f_hz": 50.0
+  },
+
+  "bus": [
+    {"id": 0, "name": "B00 Transmission tie", "vn_kv": 300.0, "type": "SLACK", "vm_pu": 1.020, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "300kV", "in_service": true},
+    {"id": 1, "name": "B01 Hydro plant HV",   "vn_kv": 300.0, "type": "PV",    "vm_pu": 1.020, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "300kV", "in_service": true},
+    {"id": 2, "name": "B02 Substation A",     "vn_kv": 132.0, "type": "PQ",    "vm_pu": 1.000, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "132kV", "in_service": true},
+    {"id": 3, "name": "B03 Substation B",     "vn_kv": 132.0, "type": "PQ",    "vm_pu": 1.000, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "132kV", "in_service": true},
+    {"id": 4, "name": "B04 Small hydro",      "vn_kv": 132.0, "type": "PV",    "vm_pu": 1.010, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "132kV", "in_service": true},
+    {"id": 5, "name": "B05 Substation C",     "vn_kv": 132.0, "type": "PQ",    "vm_pu": 1.000, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "132kV", "in_service": true},
+    {"id": 6, "name": "B06 Substation D",     "vn_kv": 132.0, "type": "PQ",    "vm_pu": 1.000, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "132kV", "in_service": true},
+    {"id": 7, "name": "B07 Substation E",     "vn_kv": 132.0, "type": "PQ",    "vm_pu": 1.000, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "132kV", "in_service": true},
+    {"id": 8, "name": "B08 Substation F",     "vn_kv": 132.0, "type": "PQ",    "vm_pu": 1.000, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "132kV", "in_service": true},
+    {"id": 9, "name": "B09 Industrial load",  "vn_kv": 132.0, "type": "PQ",    "vm_pu": 1.000, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "132kV", "in_service": true}
+  ],
+
+  "line": [
+    {"id":  0, "name": "L00 B00-B01", "from_bus": 0, "to_bus": 1, "length_km": 65.0, "r_ohm_per_km": 0.030, "x_ohm_per_km": 0.300, "c_nf_per_km": 12.0, "g_us_per_km": 0.0, "max_i_ka": 1.29, "parallel": 1, "conductor": "FeAl 2x500", "in_service": true},
+    {"id":  1, "name": "L01 B02-B03", "from_bus": 2, "to_bus": 3, "length_km": 42.0, "r_ohm_per_km": 0.120, "x_ohm_per_km": 0.400, "c_nf_per_km":  9.5, "g_us_per_km": 0.0, "max_i_ka": 0.68, "parallel": 1, "conductor": "FeAl 240",   "in_service": true},
+    {"id":  2, "name": "L02 B03-B04", "from_bus": 3, "to_bus": 4, "length_km": 38.0, "r_ohm_per_km": 0.120, "x_ohm_per_km": 0.400, "c_nf_per_km":  9.5, "g_us_per_km": 0.0, "max_i_ka": 0.68, "parallel": 1, "conductor": "FeAl 240",   "in_service": true},
+    {"id":  3, "name": "L03 B04-B05", "from_bus": 4, "to_bus": 5, "length_km": 55.0, "r_ohm_per_km": 0.120, "x_ohm_per_km": 0.400, "c_nf_per_km":  9.5, "g_us_per_km": 0.0, "max_i_ka": 0.68, "parallel": 1, "conductor": "FeAl 240",   "in_service": true},
+    {"id":  4, "name": "L04 B05-B06", "from_bus": 5, "to_bus": 6, "length_km": 30.0, "r_ohm_per_km": 0.120, "x_ohm_per_km": 0.400, "c_nf_per_km":  9.5, "g_us_per_km": 0.0, "max_i_ka": 0.68, "parallel": 1, "conductor": "FeAl 240",   "in_service": true},
+    {"id":  5, "name": "L05 B06-B07", "from_bus": 6, "to_bus": 7, "length_km": 45.0, "r_ohm_per_km": 0.120, "x_ohm_per_km": 0.400, "c_nf_per_km":  9.5, "g_us_per_km": 0.0, "max_i_ka": 0.68, "parallel": 1, "conductor": "FeAl 240",   "in_service": true},
+    {"id":  6, "name": "L06 B07-B08", "from_bus": 7, "to_bus": 8, "length_km": 36.0, "r_ohm_per_km": 0.120, "x_ohm_per_km": 0.400, "c_nf_per_km":  9.5, "g_us_per_km": 0.0, "max_i_ka": 0.68, "parallel": 1, "conductor": "FeAl 240",   "in_service": true},
+    {"id":  7, "name": "L07 B08-B02", "from_bus": 8, "to_bus": 2, "length_km": 50.0, "r_ohm_per_km": 0.120, "x_ohm_per_km": 0.400, "c_nf_per_km":  9.5, "g_us_per_km": 0.0, "max_i_ka": 0.68, "parallel": 1, "conductor": "FeAl 240",   "in_service": true},
+    {"id":  8, "name": "L08 B03-B07", "from_bus": 3, "to_bus": 7, "length_km": 60.0, "r_ohm_per_km": 0.190, "x_ohm_per_km": 0.420, "c_nf_per_km":  9.0, "g_us_per_km": 0.0, "max_i_ka": 0.53, "parallel": 1, "conductor": "FeAl 150",   "in_service": true},
+    {"id":  9, "name": "L09 B06-B09", "from_bus": 6, "to_bus": 9, "length_km": 25.0, "r_ohm_per_km": 0.120, "x_ohm_per_km": 0.400, "c_nf_per_km":  9.5, "g_us_per_km": 0.0, "max_i_ka": 0.68, "parallel": 1, "conductor": "FeAl 240",   "in_service": true},
+    {"id": 10, "name": "L10 B08-B09", "from_bus": 8, "to_bus": 9, "length_km": 33.0, "r_ohm_per_km": 0.190, "x_ohm_per_km": 0.420, "c_nf_per_km":  9.0, "g_us_per_km": 0.0, "max_i_ka": 0.53, "parallel": 1, "conductor": "FeAl 150",   "in_service": true}
+  ],
+
+  "transformer": [
+    {"id": 0, "name": "T00 B00-B02", "hv_bus": 0, "lv_bus": 2, "sn_mva": 160.0, "vn_hv_kv": 300.0, "vn_lv_kv": 132.0, "vk_percent": 12.0, "vkr_percent": 0.35, "pfe_kw": 60.0, "i0_percent": 0.08, "shift_degree": 0.0, "tap_side": "hv", "tap_neutral": 0, "tap_min": -9, "tap_max": 9, "tap_pos":  0, "tap_step_percent": 1.5, "tap_step_degree": 0.0, "tap_phase_shifter": false, "parallel": 1, "in_service": true},
+    {"id": 1, "name": "T01 B01-B05", "hv_bus": 1, "lv_bus": 5, "sn_mva": 160.0, "vn_hv_kv": 300.0, "vn_lv_kv": 132.0, "vk_percent": 12.0, "vkr_percent": 0.35, "pfe_kw": 60.0, "i0_percent": 0.08, "shift_degree": 0.0, "tap_side": "hv", "tap_neutral": 0, "tap_min": -9, "tap_max": 9, "tap_pos": -2, "tap_step_percent": 1.5, "tap_step_degree": 0.0, "tap_phase_shifter": false, "parallel": 1, "in_service": true}
+  ],
+
+  "generator": [
+    {"id": 0, "name": "G00 Transmission infeed", "bus": 0, "type": "external_grid", "p_mw":   0.0, "vm_pu": 1.020, "sn_mva": 500.0, "min_p_mw": -300.0, "max_p_mw": 300.0, "min_q_mvar": -150.0, "max_q_mvar": 150.0, "slack": true,  "in_service": true},
+    {"id": 1, "name": "G01 Hydro large",         "bus": 1, "type": "hydro",         "p_mw": 120.0, "vm_pu": 1.020, "sn_mva": 150.0, "min_p_mw":    0.0, "max_p_mw": 140.0, "min_q_mvar":  -50.0, "max_q_mvar":  70.0, "slack": false, "in_service": true},
+    {"id": 2, "name": "G02 Hydro small",         "bus": 4, "type": "hydro",         "p_mw":  60.0, "vm_pu": 1.010, "sn_mva":  75.0, "min_p_mw":    0.0, "max_p_mw":  70.0, "min_q_mvar":  -25.0, "max_q_mvar":  35.0, "slack": false, "in_service": true}
+  ],
+
+  "load": [
+    {"id": 0, "name": "LD02", "bus": 2, "p_mw": 25.0, "q_mvar":  8.0, "scaling": 1.0, "type": "mixed",      "in_service": true},
+    {"id": 1, "name": "LD03", "bus": 3, "p_mw": 30.0, "q_mvar": 10.0, "scaling": 1.0, "type": "mixed",      "in_service": true},
+    {"id": 2, "name": "LD04", "bus": 4, "p_mw": 10.0, "q_mvar":  3.0, "scaling": 1.0, "type": "mixed",      "in_service": true},
+    {"id": 3, "name": "LD05", "bus": 5, "p_mw": 20.0, "q_mvar":  6.0, "scaling": 1.0, "type": "mixed",      "in_service": true},
+    {"id": 4, "name": "LD06", "bus": 6, "p_mw": 35.0, "q_mvar": 12.0, "scaling": 1.0, "type": "mixed",      "in_service": true},
+    {"id": 5, "name": "LD07", "bus": 7, "p_mw": 25.0, "q_mvar":  8.0, "scaling": 1.0, "type": "mixed",      "in_service": true},
+    {"id": 6, "name": "LD08", "bus": 8, "p_mw": 30.0, "q_mvar": 10.0, "scaling": 1.0, "type": "mixed",      "in_service": true},
+    {"id": 7, "name": "LD09", "bus": 9, "p_mw": 45.0, "q_mvar": 15.0, "scaling": 1.0, "type": "industrial", "in_service": true}
+  ],
+
+  "shunt": [
+    {"id": 0, "name": "SH09 capacitor bank", "bus": 9, "q_mvar": -15.0, "p_mw": 0.0, "vn_kv": 132.0, "step": 1, "max_step": 2, "in_service": true}
+  ],
+
+  "switch": []
+}

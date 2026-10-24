@@ -1,0 +1,98 @@
+{
+  "name": "Southwest Norway - 8-node 420 kV equivalent (max load winter - base)",
+  "version": "7.4",
+
+  "base": {
+    "s_base_mva": 100.0,
+    "f_hz":       50.0,
+    "v_base_kv":  400.0,
+    "z_base_ohm": 1600.0,
+    "i_base_ka":  0.144
+  },
+
+  "scenario": {
+    "description":                    "load winter - base",
+    "load_factor_general":            1.0,
+    "load_factor_industrial":         1.0,
+    "dispatch_factor_hydro":          0.8,
+    "dispatch_factor_hydro_regional": 0.5,
+    "dispatch_factor_wind":           0.4,
+    "hvdc_export_mw":                 {"NorNed": 550.0, "Skagerrak": 1300.0, "NordLink": 1100.0},
+    "external_exchange_mw":           {"LYS": 1200.0, "BRO": 0.0},
+    "thermal_rating_factor":          1.0
+  },
+
+  "bus": [
+    {"id": 0, "name": "N0 Lyse",                     "vn_kv": 400.0, "type": "PV",    "vm_pu": 1.02, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "LYS", "in_service": true, "lat": 59.06, "lon": 6.67},
+    {"id": 1, "name": "N1 Fagrafjell (Nord-Jaeren)", "vn_kv": 400.0, "type": "PQ",    "vm_pu": 1.0 , "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "FAG", "in_service": true, "lat": 58.79, "lon": 5.76},
+    {"id": 2, "name": "N2 Ertsmyra (Sira-Kvina)",    "vn_kv": 400.0, "type": "PV",    "vm_pu": 1.02, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "ERT", "in_service": true, "lat": 58.67, "lon": 6.76},
+    {"id": 3, "name": "N3 Kvinesdal (Feda)",         "vn_kv": 400.0, "type": "PV",    "vm_pu": 1.02, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "KVD", "in_service": true, "lat": 58.28, "lon": 6.85},
+    {"id": 4, "name": "N4 Honna",                    "vn_kv": 400.0, "type": "PQ",    "vm_pu": 1.0 , "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "HON", "in_service": true, "lat": 58.68, "lon": 7.48},
+    {"id": 5, "name": "N5 Kristiansand",             "vn_kv": 400.0, "type": "PQ",    "vm_pu": 1.0 , "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "KRS", "in_service": true, "lat": 58.26, "lon": 7.9 },
+    {"id": 6, "name": "N6 Brokke",                   "vn_kv": 400.0, "type": "PV",    "vm_pu": 1.02, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "BRO", "in_service": true, "lat": 59.12, "lon": 7.51},
+    {"id": 7, "name": "N7 Arendal",                  "vn_kv": 400.0, "type": "SLACK", "vm_pu": 1.02, "va_degree": 0.0, "vm_min_pu": 0.95, "vm_max_pu": 1.05, "zone": "ARE", "in_service": true, "lat": 58.59, "lon": 8.73}
+  ],
+
+  "line": [
+    {"id":  0, "name": "L00 N0-N1 LYS-FAG",                                            "from_bus": 0, "to_bus": 1, "length_km":   66.0, "r_ohm_per_km": 0.016 , "x_ohm_per_km": 0.29 , "c_nf_per_km": 12  , "g_us_per_km": 0.0, "max_i_ka": 3.9 , "parallel": 1, "in_service": true},
+    {"id":  1, "name": "L01 N0-N2 LYS-ERT",                                            "from_bus": 0, "to_bus": 2, "length_km":   51.0, "r_ohm_per_km": 0.014 , "x_ohm_per_km": 0.25 , "c_nf_per_km": 12  , "g_us_per_km": 0.0, "max_i_ka": 3.9 , "parallel": 1, "in_service": true},
+    {"id":  2, "name": "L02 N0-N4 LYS-HON (replaces the 300kV transmission there)",    "from_bus": 0, "to_bus": 4, "length_km":   63.0, "r_ohm_per_km": 0.23  , "x_ohm_per_km": 3.0  , "c_nf_per_km": 6.2 , "g_us_per_km": 0.0, "max_i_ka": 1.34, "parallel": 1, "in_service": true},
+    {"id":  3, "name": "L03 N1-N2 FAG-ERT",                                            "from_bus": 1, "to_bus": 2, "length_km":   63.0, "r_ohm_per_km": 0.089 , "x_ohm_per_km": 1.3  , "c_nf_per_km": 6.5 , "g_us_per_km": 0.0, "max_i_ka": 1.34, "parallel": 1, "in_service": true},
+    {"id":  4, "name": "L04 N1-N3 FAG-KVD",                                            "from_bus": 1, "to_bus": 3, "length_km":   93.0, "r_ohm_per_km": 0.089 , "x_ohm_per_km": 1.1  , "c_nf_per_km": 6.2 , "g_us_per_km": 0.0, "max_i_ka": 1.34, "parallel": 1, "in_service": true},
+    {"id":  5, "name": "L05 N2-N3 ERT-KVD parallel 1",                                 "from_bus": 2, "to_bus": 3, "length_km":   46.0, "r_ohm_per_km": 0.016 , "x_ohm_per_km": 0.28 , "c_nf_per_km": 12  , "g_us_per_km": 0.0, "max_i_ka": 3.9 , "parallel": 1, "in_service": true},
+    {"id":  6, "name": "L06 N2-N3 ERT-KVD parallel 2",                                 "from_bus": 2, "to_bus": 3, "length_km":   46.0, "r_ohm_per_km": 0.016 , "x_ohm_per_km": 0.28 , "c_nf_per_km": 12  , "g_us_per_km": 0.0, "max_i_ka": 3.9 , "parallel": 1, "in_service": true},
+    {"id":  7, "name": "L07 N2-N4 ERT-HON",                                            "from_bus": 2, "to_bus": 4, "length_km":   50.0, "r_ohm_per_km": 0.016 , "x_ohm_per_km": 0.3  , "c_nf_per_km": 12  , "g_us_per_km": 0.0, "max_i_ka": 3.9 , "parallel": 1, "in_service": true},
+    {"id":  8, "name": "L08 N3-N5 KVD-KRS",                                            "from_bus": 3, "to_bus": 5, "length_km":   63.0, "r_ohm_per_km": 0.016 , "x_ohm_per_km": 0.28 , "c_nf_per_km": 12  , "g_us_per_km": 0.0, "max_i_ka": 3.9 , "parallel": 1, "in_service": true},
+    {"id":  9, "name": "L09 N4-N7 HON-ARE",                                            "from_bus": 4, "to_bus": 7, "length_km":   75.0, "r_ohm_per_km": 0.016 , "x_ohm_per_km": 0.28 , "c_nf_per_km": 12  , "g_us_per_km": 0.0, "max_i_ka": 3.9 , "parallel": 1, "in_service": true},
+    {"id": 10, "name": "L10 N5-N6 KRS-BRO",                                            "from_bus": 5, "to_bus": 6, "length_km":  120.0, "r_ohm_per_km": 0.024 , "x_ohm_per_km": 0.32 , "c_nf_per_km": 11  , "g_us_per_km": 0.0, "max_i_ka": 2.6 , "parallel": 1, "in_service": true},
+    {"id": 11, "name": "L11 N5-N7 KRS-ARE",                                            "from_bus": 5, "to_bus": 7, "length_km":   63.0, "r_ohm_per_km": 0.024 , "x_ohm_per_km": 0.33 , "c_nf_per_km": 11  , "g_us_per_km": 0.0, "max_i_ka": 2.6 , "parallel": 1, "in_service": true},
+    {"id": 12, "name": "L12 N0-N6 LYS-BRO (via Sauda)",                                "from_bus": 0, "to_bus": 6, "length_km":  156.0, "r_ohm_per_km": 0.024 , "x_ohm_per_km": 0.32 , "c_nf_per_km": 11  , "g_us_per_km": 0.0, "max_i_ka": 2.6 , "parallel": 1, "in_service": true}
+  ],
+
+  "transformer": [],
+
+  "generator": [
+    {"id":  0, "name": "G00 Arendal - external_grid",                   "bus": 7, "type": "external_grid",       "control": "SLACK", "p_mw":    0.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva": 10000.0, "min_p_mw": -2500.0, "max_p_mw": 2500.0, "min_q_mvar": -1500.0, "max_q_mvar": 1500.0, "slack": true,  "in_service": true},
+    {"id":  1, "name": "G01 Lyse - external_equivalent",                "bus": 0, "type": "external_equivalent", "control": "PV",    "p_mw": 1200.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":  2000.0, "min_p_mw": -1500.0, "max_p_mw": 1500.0, "min_q_mvar":  -750.0, "max_q_mvar":  750.0, "slack": false, "in_service": true},
+    {"id":  2, "name": "G02 Lyse - hydro",                              "bus": 0, "type": "hydro",               "control": "PV",    "p_mw":  584.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   810.0, "min_p_mw":  -200.0, "max_p_mw":  730.0, "min_q_mvar":  -330.0, "max_q_mvar":  330.0, "slack": false, "in_service": true},
+    {"id":  3, "name": "G03 Lyse - hydro_regional",                     "bus": 0, "type": "hydro_regional",      "control": "PQ",    "p_mw":   16.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":    35.0, "min_p_mw":     0.0, "max_p_mw":   32.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true},
+    {"id":  4, "name": "G04 Fagrafjell (Nord-Jaeren) - hydro_regional", "bus": 1, "type": "hydro_regional",      "control": "PQ",    "p_mw":  120.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   280.0, "min_p_mw":     0.0, "max_p_mw":  250.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true},
+    {"id":  5, "name": "G05 Fagrafjell (Nord-Jaeren) - wind",           "bus": 1, "type": "wind",                "control": "PQ",    "p_mw":  270.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   760.0, "min_p_mw":     0.0, "max_p_mw":  680.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true},
+    {"id":  6, "name": "G06 Ertsmyra (Sira-Kvina) - hydro",             "bus": 2, "type": "hydro",               "control": "PV",    "p_mw": 1080.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":  1500.0, "min_p_mw":     0.0, "max_p_mw": 1350.0, "min_q_mvar":  -610.0, "max_q_mvar":  610.0, "slack": false, "in_service": true},
+    {"id":  7, "name": "G07 Ertsmyra (Sira-Kvina) - hydro_regional",    "bus": 2, "type": "hydro_regional",      "control": "PQ",    "p_mw":   12.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":    26.0, "min_p_mw":     0.0, "max_p_mw":   23.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true},
+    {"id":  8, "name": "G08 Ertsmyra (Sira-Kvina) - wind",              "bus": 2, "type": "wind",                "control": "PQ",    "p_mw":  120.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   320.0, "min_p_mw":     0.0, "max_p_mw":  290.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true},
+    {"id":  9, "name": "G09 Kvinesdal (Feda) - hydro",                  "bus": 3, "type": "hydro",               "control": "PV",    "p_mw":  120.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   170.0, "min_p_mw":     0.0, "max_p_mw":  150.0, "min_q_mvar":   -68.0, "max_q_mvar":   68.0, "slack": false, "in_service": true},
+    {"id": 10, "name": "G10 Kvinesdal (Feda) - hydro_regional",         "bus": 3, "type": "hydro_regional",      "control": "PQ",    "p_mw":    5.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":    11.0, "min_p_mw":     0.0, "max_p_mw":   10.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true},
+    {"id": 11, "name": "G11 Kvinesdal (Feda) - wind",                   "bus": 3, "type": "wind",                "control": "PQ",    "p_mw":   92.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   260.0, "min_p_mw":     0.0, "max_p_mw":  230.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true},
+    {"id": 12, "name": "G12 Honna - hydro_regional",                    "bus": 4, "type": "hydro_regional",      "control": "PQ",    "p_mw":  150.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   330.0, "min_p_mw":     0.0, "max_p_mw":  300.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true},
+    {"id": 13, "name": "G13 Kristiansand - hydro_regional",             "bus": 5, "type": "hydro_regional",      "control": "PQ",    "p_mw":  180.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   400.0, "min_p_mw":     0.0, "max_p_mw":  360.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true},
+    {"id": 14, "name": "G14 Brokke - external_equivalent",              "bus": 6, "type": "external_equivalent", "control": "PV",    "p_mw":    0.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":  1500.0, "min_p_mw": -1000.0, "max_p_mw": 1000.0, "min_q_mvar":  -500.0, "max_q_mvar":  500.0, "slack": false, "in_service": true},
+    {"id": 15, "name": "G15 Brokke - hydro",                            "bus": 6, "type": "hydro",               "control": "PV",    "p_mw":  592.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   830.0, "min_p_mw":     0.0, "max_p_mw":  740.0, "min_q_mvar":  -330.0, "max_q_mvar":  330.0, "slack": false, "in_service": true},
+    {"id": 16, "name": "G16 Brokke - hydro_regional",                   "bus": 6, "type": "hydro_regional",      "control": "PQ",    "p_mw":   50.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   110.0, "min_p_mw":     0.0, "max_p_mw":  100.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true},
+    {"id": 17, "name": "G17 Arendal - hydro_regional",                  "bus": 7, "type": "hydro_regional",      "control": "PQ",    "p_mw":  160.0, "q_mvar": 0.0, "vm_pu": 1.02, "sn_mva":   350.0, "min_p_mw":     0.0, "max_p_mw":  310.0, "min_q_mvar":     0.0, "max_q_mvar":    0.0, "slack": false, "in_service": true}
+  ],
+
+  "load": [
+    {"id": 0, "name": "LD N1 Fagrafjell (Nord-Jaeren) - mixed",  "bus": 1, "p_mw": 1350.0, "q_mvar": 270.0, "scaling": 1.0, "type": "mixed", "in_service": true},
+    {"id": 1, "name": "LD N2 Ertsmyra (Sira-Kvina) - mixed",     "bus": 2, "p_mw":   10.0, "q_mvar":   2.0, "scaling": 1.0, "type": "mixed", "in_service": true},
+    {"id": 2, "name": "LD N3 Kvinesdal (Feda) - mixed",          "bus": 3, "p_mw":   58.0, "q_mvar":  12.0, "scaling": 1.0, "type": "mixed", "in_service": true},
+    {"id": 3, "name": "LD N3 Kvinesdal (Feda) - industrial",     "bus": 3, "p_mw":  320.0, "q_mvar": 100.0, "scaling": 1.0, "type": "industrial", "in_service": true},
+    {"id": 4, "name": "LD N4 Honna - mixed",                     "bus": 4, "p_mw":   80.0, "q_mvar":  16.0, "scaling": 1.0, "type": "mixed", "in_service": true},
+    {"id": 5, "name": "LD N5 Kristiansand - mixed",              "bus": 5, "p_mw":  750.0, "q_mvar": 150.0, "scaling": 1.0, "type": "mixed", "in_service": true},
+    {"id": 6, "name": "LD N7 Arendal - mixed",                   "bus": 7, "p_mw":  450.0, "q_mvar":  90.0, "scaling": 1.0, "type": "mixed", "in_service": true},
+    {"id": 7, "name": "LD N3 HVDC NorNed converter (LCC, export)",    "bus": 3, "p_mw":  550.0, "q_mvar":   0.0, "scaling": 1.0, "type": "hvdc_converter", "in_service": true},
+    {"id": 8, "name": "LD N5 HVDC Skagerrak 1-4 converter (LCC SK1-3 + VSC SK4, export)", "bus": 5, "p_mw": 1300.0, "q_mvar":   0.0, "scaling": 1.0, "type": "hvdc_converter", "in_service": true},
+    {"id": 9, "name": "LD N2 HVDC NordLink converter (VSC, export)",  "bus": 2, "p_mw": 1100.0, "q_mvar":   0.0, "scaling": 1.0, "type": "hvdc_converter", "in_service": true}
+  ],
+
+  "shunt": [
+    {"id":  0, "name": "SH24 Baerheim capacitor banks",                 "bus": 1, "q_mvar":  -50.0, "p_mw": 0.0, "vn_kv": 400.0, "step": 6, "max_step": 6, "in_service": true},
+    {"id":  1, "name": "SH13 Brokke 420 shunt reactor",       "bus": 6, "q_mvar":   50.0, "p_mw": 0.0, "vn_kv": 400.0, "step": 2, "max_step": 2, "in_service": false},
+    {"id":  2, "name": "SH12 Kristiansand 420 shunt reactor", "bus": 5, "q_mvar":   50.0, "p_mw": 0.0, "vn_kv": 400.0, "step": 2, "max_step": 2, "in_service": false},
+    {"id":  3, "name": "SH10 Arendal 420 shunt reactor ",      "bus": 7, "q_mvar":   50.0, "p_mw": 0.0, "vn_kv": 400.0, "step": 2, "max_step": 2, "in_service": false},
+    {"id":  4, "name": "SH04 Lyse 420 shunt reactor ",         "bus": 0, "q_mvar":   50.0, "p_mw": 0.0, "vn_kv": 400.0, "step": 2, "max_step": 2, "in_service": false},
+    {"id":  5, "name": "SH09 Honna 420 shunt reactor ",        "bus": 4, "q_mvar":   50.0, "p_mw": 0.0, "vn_kv": 400.0, "step": 2, "max_step": 2, "in_service": false}
+  ],
+
+  "switch": []
+}
