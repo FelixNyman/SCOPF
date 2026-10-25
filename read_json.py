@@ -20,15 +20,23 @@ def read_json(file_path):
 	for bus in file["bus"]:
 		if bus["in_service"]:
 			grid.BIds.append(bus["id"])
-			if bus["type"] == 'SLACK':
-				grid.B_sla = grid.b
 			grid.b += 1
-			# ADD MORE CODE HERE
+			
 
 	# convert the list to numpy array
 	grid.BIds = np.array(grid.BIds) # [n, 1, 1]
 	# define the size of the variable arrays
-	grid.BLS   = np.zeros(grid.b, dtype=complex)    # [n, 1, 1]
+	grid.BLS    = np.zeros(grid.b, dtype=complex)    # [n, 1, 1]
+	grid.BV_min = np.zeros(grid.b)                   # [n, 1, 1]
+	grid.BV_max = np.zeros(grid.b)                   # [n, 1, 1]
+
+	# add all bus voltage limits
+	b = 0
+	for bus in file["bus"]:
+		if bus["in_service"]:
+			grid.BV_min[b] = bus["vm_min_pu"]
+			grid.BV_max[b] = bus["vm_max_pu"]
+			b += 1
 
 	# determnie the stady load case
 	for load in file["load"]:

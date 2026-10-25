@@ -1,5 +1,7 @@
 import numpy as np
-from constrain import constrain_real_power, axis_sum
+from constrain import constrain_real_power
+import time
+from plot import Plot
 # Consider a network with n buses. 
 # All variables starting with a capital letter are of size
 # n or n x n and represent properties of the buses
@@ -14,12 +16,14 @@ class Grid:
 	"""
 	def __init__(self):
 		# ______B SIZE__________
-		self.b = 0     # [1, 1, 1]  bus count
+		self.b = 0      # [1, 1, 1]  bus count
 
 		# constants:
-		self.BLS = 0   # [n, 1, 1]  bus load power
-		self.BIds = [] # [n, 1, 1]  bus id's, diffent from indecies
-		self.B_sla = 0 # [1, 1, 1]  bus, internal index slack-bus
+		self.BLS = 0    # [n, 1, 1]  bus load power
+		self.BV_max = 0 # [n, 1, 1]  bus max voltage
+		self.BV_min = 0 # [n, 1, 1]  bus min voltage
+		self.BIds = []  # [n, 1, 1]  bus id's, diffent from indecies
+		self.B_sla = 0  # [1, 1, 1]  bus, internal index slack-bus
 
 
 		#_______G SIZE__________
@@ -63,29 +67,24 @@ class Grid:
 
 	def step_GS(self):
 		"""Performes a gradient decent step while maintaning the sum of generation and respecting there real power limits."""
-		# assume real powers have already been constrained
-		delta = 10
-		# create a matrix of vectors with alterations to the real power of individual generators
-		Delta = self.GS.real[:, None] + delta * np.diag(np.ones(self.g))
-		#Delta = self.GS.real[:, None] + delta * (2*np.random.rand(self.g**2).reshape([self.g, self.g]) - 1)
-		# correct powers to be within limits
-		Delta = constrain_real_power(Delta, self.GS_min.real[:, None], self.GS_max.real[:, None])
-		# ensure total real power is maintaned through normalization 
-		Delta = axis_sum(Delta, np.sum(self.GS.real), 0)
-		# numerically approximate the cost cahnge of the different alterations
-		nabla = ( self.cost(Delta) - self.cost(self.GS.real[:, None]))
+		new, old, one_norm = self.GS.real, 0, np.sum(self.GS.real)
 
-		best_state = np.sum(np.where(nabla == np.min(nabla), range(self.g), -1))
+		# unconstrained, analytic gradient decent of cost funtion
+		new -= 0.1*(self.GCC[1, :] + 2*self.GCC[2, :] * self.GS.real)
 
-		if nabla[best_state] < 0:
-			self.GS += -self.GS.real + Delta[:, best_state].real
+		# contradicting constrains requier iteration to stabelize
+		while np.max(np.abs(new - old)) > 0.001:
+			old = new
+			new = new * one_norm / np.sum(new) # projection onto g-1 space
+			new = constrain_real_power(new, self.GS_min.real, self.GS_max.real) # box constrain in g space
 
+		self.GS += -self.GS.real + new
 
 	def cost(self, val):
 		"""Returns vector of costs from matrix of generator states."""
 		return np.sum(self.GCC[0, :, None] + self.GCC[1, :, None] * val + self.GCC[2, :, None] * val**2, 0)
 
-	def constrain_power(self):
+	def GS_lim(self):
 		"""contstrains aparent generator power within rectangular limits"""
 		self.GS += np.where(self.GS.real > self.GS_max.real, -self.GS.real + self.GS_max.real, 0)
 		self.GS += np.where(self.GS.real < self.GS_min.real, -self.GS.real + self.GS_min.real, 0)
@@ -95,7 +94,31 @@ class Grid:
 
 	
 	# constrain voltage magnitude to lie within radial limits
-	def constrain_voltage(self):
-		self.V = np.where(np.abs(self.V) < np.real(self.V_m), self.V * np.real(self.V_m) / np.abs(self.V), self.V)
-		self.V = np.where(np.abs(self.V) > np.real(self.V_p), self.V * np.real(self.V_p) / np.abs(self.V), self.V)
-		
+	def correct_voltage(self, V):
+
+		# constrain voltage magnitude
+		V = np.where(np.abs(V) > self.BV_max, V * np.abs(self.BV_max) / np.abs(V), V)
+		V = np.where(np.abs(V) < self.BV_min, V * np.abs(self.BV_min) / np.abs(V), V)
+
+		# iterate untill the bus voltages are recoverd between iterations
+		TOLORANCE = 0.000001
+		V_old = np.zeros(len(V), dtype = complex)
+		while np.max(np.abs(V - V_old)) > TOLORANCE:
+			V_old = V
+			# get component delta voltage
+			CDV = np.sum(self.CTM * V[:, None], 0)
+			# get difference phasor between component delta voltage and its limit
+			CDDV = CDV / np.abs(CDV) * (self.CDV_lim - np.abs(CDV)) / 2 # unit vector times distance differance
+			# only consider violated limits
+			CDDV = np.where(np.abs(CDV) > self.CDV_lim, CDDV, 0)
+			# remove differance phasor from buses
+			V += np.sum(self.CTM * CDDV[None, :], 1)
+
+		# rotate all phasors so average angle is zero
+		V *= np.exp(-1j*np.average(np.angle(V)))
+
+		# favour the voltage magnitude to be one
+		w = 10
+		V *= (w*np.abs(V) + 1) / (w + 1) / np.abs(V)
+
+		return V
