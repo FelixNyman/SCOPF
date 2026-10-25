@@ -57,28 +57,28 @@ def read_json(file_path):
 			grid.g += 1
 
 	# allocate memory
-	grid.GTM   = np.zeros([grid.b, grid.g])         # [n, 1, g]
-	#grid.GC   = np.zeros([3, grid.g])              # [n, 1, g]
-	grid.GS_max = np.zeros(grid.g, dtype=complex)     # [1, 1, g]
-	grid.GS_min = np.zeros(grid.g, dtype=complex)     # [1, 1, g]
-	grid.GS0    = np.zeros(grid.g, dtype=complex)     # [1, 1, g]
+	grid.GTM   = np.zeros([grid.b, grid.g])                   # [n, 1, g]
+	grid.GRTM  = np.zeros([grid.b, grid.g], dtype= complex)   # [n, 1, g]
+	grid.GCC   = np.zeros([3, grid.g])                        # [3, 1, g]
+	grid.GS_max = np.zeros(grid.g, dtype=complex)             # [1, 1, g]
+	grid.GS_min = np.zeros(grid.g, dtype=complex)             # [1, 1, g]
+	grid.GS    = np.zeros(grid.g, dtype=complex)              # [1, 1, g]
 
 	g = 0
 	for gen in file["generator"]:
 		ix = grid.BIds_to_BIdx(gen["bus"])
 		if ix != -1:
-			if gen["slack"]:
-				grid.G_sla  = g
 			# ad the properties of a connected generator
 			grid.GTM[ix, g] = 1
 			grid.GS_max[g]  = (gen["max_p_mw"] + 1j*gen["max_q_mvar"]) / P_base
 			grid.GS_min[g]  = (gen["min_p_mw"] + 1j*gen["min_q_mvar"]) / P_base
-			grid.GS0[g]     = gen["p_mw"] / P_base
-			#grid.GC[0, :]  = grid.G_max                    # all have cost to run based on there size
-			#grid.GC[1, :]  = grid.GC[0, grid.G_sla] / 5     # all costs are linear with the same slope
-			#grid.GC[2, :]  = grid.GC[0, grid.G_sla] / 100   # slight quadratic 
+			grid.GS[g]      = gen["p_mw"] / P_base
 			g += 1
-		
+
+	# guess some resonalbe cost functions
+	grid.GCC[0, :]  = grid.GS_max.real                         # all have cost to run based on there size
+	grid.GCC[1, :]  = 0.5 + 0.5 * np.random.rand(grid.g)      # all costs are linear between 0.5 and 1 [$ / per unit]
+	grid.GCC[2, :]  = -0.01 * np.random.rand(grid.g)           # all are slight quadratic concave
 
 	# _____________________________________
 

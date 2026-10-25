@@ -1,5 +1,5 @@
 import numpy as np
-
+from constrain import constrain_real_power, axis_sum
 # Consider a network with n buses. 
 # All variables starting with a capital letter are of size
 # n or n x n and represent properties of the buses
@@ -27,11 +27,14 @@ class Grid:
 
 		# constant: 
 		self.GTM = 0    # [n, 1, g]  generator topology map
-		self.GS0 = 0    # [1, 1, g]  generator initial power guess
+		self.GRTM = 0   # [n, 1, g]  generator reverse topology map
 		self.GS_max = 0 # [1, 1, g]  generator max power limit 
 		self.GS_min = 0 # [1, 1, g]  generator min power limit
-		self.G_sla = 0  # [1, 1, 1]  generator that picks up the slack
+		self.GCC = 0    # [3, 1, g]  generator cost coefficients 2:nd order
 
+		# floats
+		self.GS = 0     # [1, 1, g]  generator power
+		
 		#_______C SIZE___________
 		self.c = 0      # [1, 1, 1]  component count
 
@@ -58,14 +61,37 @@ class Grid:
 		"""Return the internal index whos bus has the wanted id, else return -1.""" 
 		return np.sum(np.where(self.BIds == id, range(1, self.b + 1), 0)) - 1
 
+	def step_GS(self):
+		"""Performes a gradient decent step while maintaning the sum of generation and respecting there real power limits."""
+		# assume real powers have already been constrained
+		delta = 10
+		# create a matrix of vectors with alterations to the real power of individual generators
+		Delta = self.GS.real[:, None] + delta * np.diag(np.ones(self.g))
+		#Delta = self.GS.real[:, None] + delta * (2*np.random.rand(self.g**2).reshape([self.g, self.g]) - 1)
+		# correct powers to be within limits
+		Delta = constrain_real_power(Delta, self.GS_min.real[:, None], self.GS_max.real[:, None])
+		# ensure total real power is maintaned through normalization 
+		Delta = axis_sum(Delta, np.sum(self.GS.real), 0)
+		# numerically approximate the cost cahnge of the different alterations
+		nabla = ( self.cost(Delta) - self.cost(self.GS.real[:, None]))
 
-	# contstrains aparent power within rectangular limits
+		best_state = np.sum(np.where(nabla == np.min(nabla), range(self.g), -1))
+
+		if nabla[best_state] < 0:
+			self.GS += -self.GS.real + Delta[:, best_state].real
+
+
+	def cost(self, val):
+		"""Returns vector of costs from matrix of generator states."""
+		return np.sum(self.GCC[0, :, None] + self.GCC[1, :, None] * val + self.GCC[2, :, None] * val**2, 0)
+
 	def constrain_power(self):
-		self.S = np.where(np.real(self.S) > np.real(self.S_p), np.real(self.S_p) + 1j*np.imag(self.S), self.S)
-		self.S = np.where(np.real(self.S) < np.real(self.S_m), np.real(self.S_m) + 1j*np.imag(self.S), self.S)
-	
-		self.S = np.where(np.imag(self.S) > np.imag(self.S_p), np.real(self.S) + 1j*np.imag(self.S_p), self.S)
-		self.S = np.where(np.imag(self.S) < np.imag(self.S_m), np.real(self.S) + 1j*np.imag(self.S_m), self.S)
+		"""contstrains aparent generator power within rectangular limits"""
+		self.GS += np.where(self.GS.real > self.GS_max.real, -self.GS.real + self.GS_max.real, 0)
+		self.GS += np.where(self.GS.real < self.GS_min.real, -self.GS.real + self.GS_min.real, 0)
+		
+		self.GS += np.where(self.GS.imag > self.GS_max.imag, -self.GS.imag + self.GS_max.imag, 0)*1j
+		self.GS += np.where(self.GS.imag < self.GS_min.imag, -self.GS.imag + self.GS_min.imag, 0)*1j
 
 	
 	# constrain voltage magnitude to lie within radial limits
