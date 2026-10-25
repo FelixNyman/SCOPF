@@ -19,32 +19,18 @@ class Network:
 		self.BV = 0    # [n, 1, 1]  bus voltage
 		self.BS = 0    # [n, 1, 1]  bus power
 
-		#_______G SIZE__________
-		self.g = 0     # [1, 1, 1]  generator count
-
-		# floats:
-		self.GS = 0    # [1, 1, g]  generator power
-
 		#_______C SIZE___________
 		self.c = 0     # [1, 1, 1]  component count
 
 		# floats:
 		self.CA = 0    # [1, 1, c]  component activation
 		self.CTR = 0   # [1, 1, c]  component tap ratio
-		self.CBC = []  # [       ]  component, network contingency
+		self.CC = 0    # [1, 1, 1]  component contingency
 
 
-	# contstrains aparent power within rectangular limits
-	def constrain_power(self):
-		self.S = np.where(np.real(self.S) > np.real(self.S_p), np.real(self.S_p) + 1j*np.imag(self.S), self.S)
-		self.S = np.where(np.real(self.S) < np.real(self.S_m), np.real(self.S_m) + 1j*np.imag(self.S), self.S)
-	
-		self.S = np.where(np.imag(self.S) > np.imag(self.S_p), np.real(self.S) + 1j*np.imag(self.S_p), self.S)
-		self.S = np.where(np.imag(self.S) < np.imag(self.S_m), np.real(self.S) + 1j*np.imag(self.S_m), self.S)
-
-	
-	# constrain voltage magnitude to lie within radial limits
-	def constrain_voltage(self):
-		self.V = np.where(np.abs(self.V) < np.real(self.V_m), self.V * np.real(self.V_m) / np.abs(self.V), self.V)
-		self.V = np.where(np.abs(self.V) > np.real(self.V_p), self.V * np.real(self.V_p) / np.abs(self.V), self.V)
-		
+	def voltage(self):
+		"""Iterate bus voltage""" 
+		self.BV = self.Z @ np.conjugate(self.BS / self.BV)		
+	def power(self):
+		"""Calculate bus power.""" 
+		self.BS = self.BV * np.conjugate(self.Y @ self.BV)

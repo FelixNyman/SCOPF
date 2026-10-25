@@ -23,7 +23,7 @@ class Grid:
 		self.BV_max = 0 # [n, 1, 1]  bus max voltage
 		self.BV_min = 0 # [n, 1, 1]  bus min voltage
 		self.BIds = []  # [n, 1, 1]  bus id's, diffent from indecies
-		self.B_sla = 0  # [1, 1, 1]  bus, internal index slack-bus
+		#self.B_sla = 0  # [1, 1, 1]  bus, internal index slack-bus
 
 
 		#_______G SIZE__________
@@ -49,7 +49,21 @@ class Grid:
 		self.CTR = 0    # [1, 1, c]  component tap ratio
 		self.CDV_lim = 0# [1, 1, c]  component delta voltage limit
 
-
+	def GS_to_BS(self):
+		"""Maps generator power to bus power. Also defines revese map for non injectve map."""
+		R = self.GTM * self.GS.real[None, :]
+		R = R / np.where(R != 0 , np.sum(R, 1)[:, None], 1)
+		I = self.GTM * (self.GS.imag[None, :] + 0.1) # +0.1 avoids discriminating a generator at zero reactive power when remaping
+		I = I / np.where(I != 0 , np.sum(I, 1)[:, None], 1)
+		self.GRTM = R + 1j*I
+		return np.sum(self.GTM * self.GS[None, :], 1) + self.BLS
+	
+	def BS_to_GS(self, BS):
+		"""Maps bus power to generator power. May be ambigous for multible generators on the same bus,
+		then proportions are maintaned individually for real and reactive power."""
+		BGS = BS - self.BLS
+		self.GS = np.sum(self.GRTM.real * BGS.real[:, None] + 1j*self.GRTM.imag * BGS.imag[:, None], 0)
+		
 	def matrix(self, A):
 		"""Contracts elimatal admittance matricies with component activation vector to obtain admittance matrix"""
 		chargeless = np.sum((self.CTM[:, None, :] * np.conjugate(self.CTM[None, :, :])) * self.CSY[None, None, :] * A[None, None, :], 2)
@@ -94,16 +108,15 @@ class Grid:
 
 	
 	# constrain voltage magnitude to lie within radial limits
-	def correct_voltage(self, V):
+	def correct_voltage(self, V, A):
 
 		# constrain voltage magnitude
 		V = np.where(np.abs(V) > self.BV_max, V * np.abs(self.BV_max) / np.abs(V), V)
 		V = np.where(np.abs(V) < self.BV_min, V * np.abs(self.BV_min) / np.abs(V), V)
 
-		# iterate untill the bus voltages are recoverd between iterations
-		TOLORANCE = 0.000001
-		V_old = np.zeros(len(V), dtype = complex)
-		while np.max(np.abs(V - V_old)) > TOLORANCE:
+		# contradicting constrains requier iteration to stabelize
+		V_old = 0
+		while np.max(np.abs(V - V_old)) > 0.001:
 			V_old = V
 			# get component delta voltage
 			CDV = np.sum(self.CTM * V[:, None], 0)
@@ -111,8 +124,8 @@ class Grid:
 			CDDV = CDV / np.abs(CDV) * (self.CDV_lim - np.abs(CDV)) / 2 # unit vector times distance differance
 			# only consider violated limits
 			CDDV = np.where(np.abs(CDV) > self.CDV_lim, CDDV, 0)
-			# remove differance phasor from buses
-			V += np.sum(self.CTM * CDDV[None, :], 1)
+			# remove differance phasor from buses for active components
+			V += np.sum(self.CTM * CDDV[None, :] * A[None, :] , 1)
 
 		# rotate all phasors so average angle is zero
 		V *= np.exp(-1j*np.average(np.angle(V)))
