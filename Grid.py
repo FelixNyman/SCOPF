@@ -49,6 +49,7 @@ class Grid:
 		self.CTR = 0    # [1, 1, c]  component tap ratio
 		self.CDV_lim = 0# [1, 1, c]  component delta voltage limit
 
+
 	def GS_to_BS(self):
 		"""Maps generator power to bus power. Also defines revese map for non injectve map."""
 		R = self.GTM * self.GS.real[None, :]
@@ -64,10 +65,10 @@ class Grid:
 		BGS = BS - self.BLS
 		self.GS = np.sum(self.GRTM.real * BGS.real[:, None] + 1j*self.GRTM.imag * BGS.imag[:, None], 0)
 		
-	def matrix(self, A):
+	def admittance_matrix(self, A):
 		"""Contracts elimatal admittance matricies with component activation vector to obtain admittance matrix"""
 		chargeless = np.sum((self.CTM[:, None, :] * np.conjugate(self.CTM[None, :, :])) * self.CSY[None, None, :] * A[None, None, :], 2)
-		return chargeless + np.diag(np.sum(np.where(self.CTM != 0, 1/2, 0) * self.CCY[None, :] *A[None, None, :], 1))
+		return chargeless + np.diag(np.sum(np.where(self.CTM != 0, 1/2, 0) * self.CCY[None, :] * A[None, :], 1))
 
 
 	def update_tap_ratios(self, a):
@@ -84,7 +85,7 @@ class Grid:
 		new, old, one_norm = self.GS.real, 0, np.sum(self.GS.real)
 
 		# unconstrained, analytic gradient decent of cost funtion
-		new -= 0.1*(self.GCC[1, :] + 2*self.GCC[2, :] * self.GS.real)
+		new -= 0.001*(self.GCC[1, :] + 2*self.GCC[2, :] * self.GS.real)
 
 		# contradicting constrains requier iteration to stabelize
 		while np.max(np.abs(new - old)) > 0.001:
@@ -94,12 +95,12 @@ class Grid:
 
 		self.GS += -self.GS.real + new
 
-	def cost(self, val):
-		"""Returns vector of costs from matrix of generator states."""
-		return np.sum(self.GCC[0, :, None] + self.GCC[1, :, None] * val + self.GCC[2, :, None] * val**2, 0)
+	def cost(self):
+		"""Returns the of costs of a generation state."""
+		return np.sum(self.GCC[0, :] + self.GCC[1, :] * self.GS.real + self.GCC[2, :] * self.GS.real**2, 0)
 
 	def GS_lim(self):
-		"""contstrains aparent generator power within rectangular limits"""
+		"""contstrains aparent generator power within rectangular phasor space limits"""
 		self.GS += np.where(self.GS.real > self.GS_max.real, -self.GS.real + self.GS_max.real, 0)
 		self.GS += np.where(self.GS.real < self.GS_min.real, -self.GS.real + self.GS_min.real, 0)
 		
@@ -107,10 +108,9 @@ class Grid:
 		self.GS += np.where(self.GS.imag < self.GS_min.imag, -self.GS.imag + self.GS_min.imag, 0)*1j
 
 	
-	# constrain voltage magnitude to lie within radial limits
 	def correct_voltage(self, V, A):
-
-		# constrain voltage magnitude
+		"""Ensure bus voltage phasors respect ratings of connecting components, and drift towards 1 per unit voltaeg magnitude."""
+		# constrain voltage magnitude to lie within radial limits
 		V = np.where(np.abs(V) > self.BV_max, V * np.abs(self.BV_max) / np.abs(V), V)
 		V = np.where(np.abs(V) < self.BV_min, V * np.abs(self.BV_min) / np.abs(V), V)
 
@@ -131,7 +131,7 @@ class Grid:
 		V *= np.exp(-1j*np.average(np.angle(V)))
 
 		# favour the voltage magnitude to be one
-		w = 10
+		w = 0.001
 		V *= (w*np.abs(V) + 1) / (w + 1) / np.abs(V)
 
 		return V
