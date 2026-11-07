@@ -1,0 +1,47 @@
+{
+  "name": "Exempel nät - 6 busar maskat 170/40 kV system",
+  "version": "1.0",
+  "base": {
+    "s_base_mva": 100.0,
+    "f_hz": 50.0
+  },
+
+  "bus": [
+    {"id": 0, "name": "P1 högnäs",   "vn_kv": 170.0, "type": "SLACK"},
+    {"id": 1, "name": "storlien" ,   "vn_kv": 170.0, "type": "PQ"   },
+    {"id": 2, "name": "forsmark" ,   "vn_kv": 170.0, "type": "PV"   },
+    {"id": 3, "name": "granås hs",   "vn_kv": 170.0, "type": "PQ"   },
+    {"id": 4, "name": "granås ls",   "vn_kv": 40.0,  "type": "PQ"   },
+    {"id": 5, "name": "ådhal",       "vn_kv": 40.0,  "type": "PQ"   },
+    {"id": 6, "name": "högnäs ls",   "vn_kv": 40.0,  "type": "PQ"   }
+  ],
+
+  "line": [
+    {"id":  0,  "from_bus": 0, "to_bus": 1, "r_ohm": 1.2, "x_ohm": 14, "x_ground_ohm": -6000, "max_i_a": 2000},
+    {"id":  1,  "from_bus": 1, "to_bus": 2, "r_ohm": 2  , "x_ohm": 10, "x_ground_ohm": -3000, "max_i_a": 2000},
+    {"id":  2,  "from_bus": 2, "to_bus": 3, "r_ohm": 0.3, "x_ohm": 4,  "x_ground_ohm": -9000, "max_i_a": 4000},
+    {"id":  3,  "from_bus": 4, "to_bus": 5, "r_ohm": 1.6, "x_ohm": 23, "x_ground_ohm": -1000, "max_i_a": 400},
+    {"id":  4,  "from_bus": 5, "to_bus": 6, "r_ohm": 1.8, "x_ohm": 20, "x_ground_ohm": -1500, "max_i_a": 600}
+    ],
+
+  "transformer": [
+    {"id": 0, "hv_bus": 0, "lv_bus": 6, "r_ohm": 0.4, "x_ohm": 5, "r_ground_ohm": 6000, "x_ground_ohm": -6000, "sn_mva": 60.0,  "tap_ratio": 1.05,  "tap_shift_rad": 0.02},
+    {"id": 0, "hv_bus": 3, "lv_bus": 4, "r_ohm": 0.4, "x_ohm": 5, "r_ground_ohm": 6000, "x_ground_ohm": -6000, "sn_mva": 120.0, "tap_ratio": 0.975, "tap_shift_rad": -0.02}
+ 	],
+
+  "generator": [
+    {"id": 0, "name": "SVK",         "p_mw": 0 , "bus": 0, "sn_mva": 500.0, "slack": true},
+    {"id": 2, "name": "vattenkraft", "p_mw": 80, "bus": 2, "sn_mva": 100.0, "slack": false}
+	],
+
+  "load": [
+    {"id": 0, "name": "juteri",  "bus": 1, "p_mw": 50.0, "q_mvar":  13.0},
+    {"id": 1, "name": "granås",  "bus": 4, "p_mw": 20.0, "q_mvar":  -3.0},
+    {"id": 2, "name": "ådhal",   "bus": 5, "p_mw": 35.0, "q_mvar":  -6.0},
+    {"id": 4, "name": "högnäs",  "bus": 6, "p_mw": 10.0, "q_mvar":   2.0}
+    ],
+
+  "shunt": [
+    {"id": 0, "name": "sjuntreaktor", "bus": 5, "x_ohm": -100}
+  ]
+}
