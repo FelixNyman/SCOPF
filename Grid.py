@@ -1,5 +1,4 @@
 import numpy as np
-from constrain import constrain_real_power
 import time
 from plot import Plot
 # Consider a network with n buses. 
@@ -20,10 +19,7 @@ class Grid:
 
 		# constants:
 		self.BLS = 0    # [n, 1, 1]  bus load power
-		self.BV_max = 0 # [n, 1, 1]  bus max voltage
-		self.BV_min = 0 # [n, 1, 1]  bus min voltage
 		self.BIds = []  # [n, 1, 1]  bus id's, diffent from indecies
-		#self.B_sla = 0  # [1, 1, 1]  bus, internal index slack-bus
 
 
 		#_______G SIZE__________
@@ -32,9 +28,8 @@ class Grid:
 		# constant: 
 		self.GTM = 0    # [n, 1, g]  generator topology map
 		self.GRTM = 0   # [n, 1, g]  generator reverse topology map
-		self.GS_max = 0 # [1, 1, g]  generator max power limit 
-		self.GS_min = 0 # [1, 1, g]  generator min power limit
-		self.GCC = 0    # [3, 1, g]  generator cost coefficients 2:nd order
+		self.GS_max = 0 # [1, 1, g]  generator max apparent power limit 
+		self.GC = 0     # [1, 1, g]  generator cost coefficients 1:st order
 
 		# floats
 		self.GS = 0     # [1, 1, g]  generator power
@@ -80,39 +75,30 @@ class Grid:
 		"""Return the internal index whos bus has the wanted id, else return -1.""" 
 		return np.sum(np.where(self.BIds == id, range(1, self.b + 1), 0)) - 1
 
-	def step_GS(self):
-		"""Performes a gradient decent step while maintaning the sum of generation and respecting there real power limits."""
-		new, old, one_norm = self.GS.real, 0, np.sum(self.GS.real)
-
-		# unconstrained, analytic gradient decent of cost funtion
-		new -= 0.001*(self.GCC[1, :] + 2*self.GCC[2, :] * self.GS.real)
-
-		# contradicting constrains requier iteration to stabelize
-		while np.max(np.abs(new - old)) > 0.001:
-			old = new
-			new = new * one_norm / np.sum(new) # projection onto g-1 space
-			new = constrain_real_power(new, self.GS_min.real, self.GS_max.real) # box constrain in g space
-
-		self.GS += -self.GS.real + new
-
-	def cost(self):
-		"""Returns the of costs of a generation state."""
-		return np.sum(self.GCC[0, :] + self.GCC[1, :] * self.GS.real + self.GCC[2, :] * self.GS.real**2, 0)
-
 	def GS_lim(self):
-		"""contstrains aparent generator power within rectangular phasor space limits"""
-		self.GS += np.where(self.GS.real > self.GS_max.real, -self.GS.real + self.GS_max.real, 0)
-		self.GS += np.where(self.GS.real < self.GS_min.real, -self.GS.real + self.GS_min.real, 0)
+		"""contstrains aparent generator power"""
+		# get errror
+		GS_error = np.abs(self.GS) - self.GS_max
+		GS_error = np.where(GS_error > 0, GS_error, 0)
+		print(f"    GS_error{np.round(GS_error,2)}")
+		# correct
+		self.GS = np.where(np.abs(self.GS) > self.GS_max, self.GS / np.abs(self.GS) * self.GS_max , self.GS)
 		
-		self.GS += np.where(self.GS.imag > self.GS_max.imag, -self.GS.imag + self.GS_max.imag, 0)*1j
-		self.GS += np.where(self.GS.imag < self.GS_min.imag, -self.GS.imag + self.GS_min.imag, 0)*1j
-
 	
 	def correct_voltage(self, V, A):
 		"""Ensure bus voltage phasors respect ratings of connecting components, and drift towards 1 per unit voltaeg magnitude."""
-		# constrain voltage magnitude to lie within radial limits
-		V = np.where(np.abs(V) > self.BV_max, V * np.abs(self.BV_max) / np.abs(V), V)
-		V = np.where(np.abs(V) < self.BV_min, V * np.abs(self.BV_min) / np.abs(V), V)
+		
+		# rotate all phasors so average angle is zero
+		angle_err = np.average(np.angle(V))
+		V *= np.exp(-1j*angle_err)
+
+		# shift the phasor space so voltage span is symmetric around 1
+		span_err = (np.max(V.real) + np.min(V.real)) / 2 - 1
+		V -= span_err 
+		
+		# remember initial barnch delta voltage violations
+		delta_err = np.abs(np.sum(self.CTM * V[:, None], 0)) - self.CDV_lim
+		delta_err = np.where(delta_err > 0, delta_err, 0)
 
 		# contradicting constrains requier iteration to stabelize
 		V_old = 0
@@ -121,17 +107,28 @@ class Grid:
 			# get component delta voltage
 			CDV = np.sum(self.CTM * V[:, None], 0)
 			# get difference phasor between component delta voltage and its limit
-			CDDV = CDV / np.abs(CDV) * (self.CDV_lim - np.abs(CDV)) / 2 # unit vector times distance differance
+			CDDV = CDV / np.abs(CDV) * (np.abs(CDV) - self.CDV_lim) / 2 # unit vector times distance differance
 			# only consider violated limits
 			CDDV = np.where(np.abs(CDV) > self.CDV_lim, CDDV, 0)
 			# remove differance phasor from buses for active components
-			V += np.sum(self.CTM * CDDV[None, :] * A[None, :] , 1)
+			V -= np.sum(self.CTM * CDDV[None, :] * A[None, :] , 1)
 
-		# rotate all phasors so average angle is zero
-		V *= np.exp(-1j*np.average(np.angle(V)))
+		# remember how much the bus voltages violates there limits
+		mag_err = np.abs(np.abs(V) - 1) - 0.05
+		mag_err = np.where(mag_err > 0, mag_err, 0)
 
-		# favour the voltage magnitude to be one
-		w = 0.001
-		V *= (w*np.abs(V) + 1) / (w + 1) / np.abs(V)
+		# constrain voltage magnitude to lie within radial limits
+		V = np.where(np.abs(V) > 1.05, V * 1.05 / np.abs(V), V)
+		V = np.where(np.abs(V) < 0.95, V * 0.95 / np.abs(V), V)
+
+		print(f"    angle_error: {angle_err}")
+		print(f"    span_error: {span_err}")
+		print(f"    delta_error: {delta_err}")
+		print(f"    mag_error: {np.round(mag_err, 2)}")
 
 		return V
+
+	def print_grid_constrains(self):
+		print(f"Max allowed effective voltage diffenreces:\n    {np.round(self.CDV_lim,3)}")
+		print(f"Per unit component seroes admittance:\n    {np.round(self.CSY,3)}")
+		#print(f"Generator topology map:{self.GTM}")

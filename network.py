@@ -23,7 +23,7 @@ class Network:
 		self.c = grid.c                            # [1, 1, 1]  component count
 
 		# floats:
-		self.CA = np.ones(grid.c, dtype=complex)   # [1, 1, c]  component activation
+		self.CA = np.ones(grid.c)                  # [1, 1, c]  component activation
 		self.CTR = grid.CTR                        # [1, 1, c]  component tap ratio
 		self.CC = -1                               # [1, 1, 1]  component contingency
 
@@ -32,8 +32,10 @@ class Network:
 		self.Z = np.linalg.inv(self.Y)
 
 	def voltage(self):
-		"""Iterate bus voltage""" 
-		self.BV = self.Z @ np.conjugate(self.BS / self.BV)		
+		"""Iterate bus voltage.""" 
+		# iteration is only stable when V ~ 1 
+		self.BV = self.Z @ np.conjugate(self.BS / self.BV)	
+			
 	def power(self):
 		"""Calculate bus power.""" 
 		self.BS = self.BV * np.conjugate(self.Y @ self.BV)

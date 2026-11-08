@@ -8,8 +8,8 @@ def read_json(file_path):
 	# load the grid from the file_path
 	with open(file_path, "r", encoding = "utf-8") as fh:
 		file = json.load(fh)
-	grid      = Grid()
-	P_base   = file["base"]["s_base_mva"]
+	grid     = Grid()
+	S_base   = file["base"]["s_base_mva"]
 
 
 
@@ -24,33 +24,23 @@ def read_json(file_path):
 			
 
 	# convert the list to numpy array
-	grid.BIds = np.array(grid.BIds) # [n, 1, 1]
+	grid.BIds = np.array(grid.BIds)                # [n, 1, 1]
 	# define the size of the variable arrays
-	grid.BLS    = np.zeros(grid.b, dtype=complex)    # [n, 1, 1]
-	grid.BV_min = np.zeros(grid.b)                   # [n, 1, 1]
-	grid.BV_max = np.zeros(grid.b)                   # [n, 1, 1]
-
-	# add all bus voltage limits
-	b = 0
-	for bus in file["bus"]:
-		if bus["in_service"]:
-			grid.BV_min[b] = bus["vm_min_pu"]
-			grid.BV_max[b] = bus["vm_max_pu"]
-			b += 1
+	grid.BLS  = np.zeros(grid.b, dtype=complex)    # [n, 1, 1]
 
 	# determnie the stady load case
 	for load in file["load"]:
 		if load ["in_service"]:
 			ix_I  = grid.BIds_to_BIdx(load["bus"])
 			if ix_I != -1:
-				grid.BLS[ix_I] -= (load["p_mw"] + 1j*load["q_mvar"]) * load["scaling"] / P_base
-	for shunt in file["shunt"]:
+				grid.BLS[ix_I] -= (load["p_mw"] + 1j*load["q_mvar"]) * load["scaling"] / S_base
+	"""for shunt in file["shunt"]:
 		if load ["in_service"]:
 			# count only if the connected buses actually exists
 			ix_I  = grid.BIds_to_BIdx(shunt["bus"])
 			if ix_I > -1:
 				grid.BLS[ix_I] += (load["p_mw"] + 1j*load["q_mvar"]) / P_base
-
+"""
 	#______________________________________
 
 
@@ -67,9 +57,8 @@ def read_json(file_path):
 	# allocate memory
 	grid.GTM   = np.zeros([grid.b, grid.g])                   # [n, 1, g]
 	grid.GRTM  = np.zeros([grid.b, grid.g], dtype= complex)   # [n, 1, g]
-	grid.GCC   = np.zeros([3, grid.g])                        # [3, 1, g]
-	grid.GS_max = np.zeros(grid.g, dtype=complex)             # [1, 1, g]
-	grid.GS_min = np.zeros(grid.g, dtype=complex)             # [1, 1, g]
+	grid.GC   = np.zeros(grid.g)                              # [1, 1, g]
+	grid.GS_max = np.zeros(grid.g)                            # [1, 1, g]
 	grid.GS    = np.zeros(grid.g, dtype=complex)              # [1, 1, g]
 
 	g = 0
@@ -78,15 +67,12 @@ def read_json(file_path):
 		if ix != -1:
 			# ad the properties of a connected generator
 			grid.GTM[ix, g] = 1
-			grid.GS_max[g]  = (gen["max_p_mw"] + 1j*gen["max_q_mvar"]) / P_base
-			grid.GS_min[g]  = (gen["min_p_mw"] + 1j*gen["min_q_mvar"]) / P_base
-			grid.GS[g]      = gen["p_mw"] / P_base
+			grid.GS_max[g]  = (gen["sn_mva"]) / S_base
+			grid.GS[g]      = gen["p_mw"] / S_base
 			g += 1
 
-	# guess some resonalbe cost functions
-	grid.GCC[0, :]  = grid.GS_max.real                         # all have cost to run based on there size
-	grid.GCC[1, :]  = 0.5 + 0.5 * np.random.rand(grid.g)      # all costs are linear between 0.5 and 1 [$ / per unit]
-	grid.GCC[2, :]  = -0.01 * np.random.rand(grid.g)           # all are slight quadratic concave
+	# guess some resonalbe cost functions          
+	grid.GC  = 0.5 + 0.5 * np.random.rand(grid.g)      # all costs are linear between 0.5 and 1 [$ / per unit]
 
 	# _____________________________________
 
@@ -130,14 +116,14 @@ def read_json(file_path):
 					V_base = bus["vn_kv"] # [kV]
 			
 			# get line series and charging admittance
-			Y_base = P_base / (V_base ** 2) # [MVA / (kV)^2 = 1/ohm]
+			Y_base = S_base / (V_base ** 2) # [MVA / (kV)^2 = 1/ohm]
 			Z_series      = line["length_km"] * (line["r_ohm_per_km"] + 1j*line["x_ohm_per_km"]) / line["parallel"] # [km * ohm / km = ohm]
 			Z_charging    = 1 / (1j*100*np.pi * line["length_km"] * line["c_nf_per_km"] * 1e-9 * line["parallel"])
 			grid.CSY[c] = 1 / (Z_series * Y_base) # [1 / ( ohm / ohm ) = per unit]
 			grid.CCY[c] = 1 / (Z_charging * Y_base) # [1 / ( ohm / ohm ) = per unit]
 
 			# get max line delta voltage
-			I_base = P_base / V_base # [MVA / kV = kA]
+			I_base = S_base / V_base # [MVA / kV = kA]
 			I_max  = line["max_i_ka"] #/ np.sqrt(3) # [kA per conductor -> one line equvilent kA] 
 			grid.CDV_lim[c] = np.abs((I_max / I_base) / grid.CSY[c]) # [(kA / kA)/ per unit = per unit ]
 			c += 1
@@ -149,16 +135,20 @@ def read_json(file_path):
 			grid.CTM[ix_I, c]  =  1
 			grid.CTM[ix_II, c] = -1
 
-			# get V_base at high voltage bus
+			"""# get V_base at high voltage bus
 			for bus in file["bus"]:
 				if bus["id"] == trafo["hv_bus"]:
 					V_base = bus["vn_kv"] # [kV]
+"""
+			# get per unit (in trafo S_base) positive sequence impedance on low voltage side of tap ratio
+			Z_th = (trafo["vkr_percent"] + 1j * np.sqrt(trafo["vk_percent"]**2 - trafo["vkr_percent"]**2)) / 100
 
-			vk_ratio = (trafo["vkr_percent"] + 1j * np.sqrt(trafo["vk_percent"]**2 - trafo["vkr_percent"]**2)) / 100
+			# invert and rescale to global S_base
+			grid.CSY[c] = trafo["parallel"] * trafo["sn_mva"] / S_base / Z_th 
 
-			grid.CSY[c] = trafo["parallel"] * trafo["sn_mva"] / P_base / vk_ratio 
+			# get upper limit to effective voltage drop over component
+			grid.CDV_lim[c] = np.abs(trafo["sn_mva"] / S_base / grid.CSY[c] / 1.05)
 
-			grid.CDV_lim[c] = np.sqrt(np.abs(trafo["sn_mva"] / P_base / grid.CSY[c]))
 
 			grid.CTR[c] = (1 + trafo["tap_pos"]*trafo["tap_step_percent"]*0.01) * np.exp(1j*np.deg2rad(trafo["tap_step_degree"]))
 

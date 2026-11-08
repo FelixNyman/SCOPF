@@ -22,9 +22,3 @@ class Plot:
 		for i in range(0, len(x)):
 			self.figure.plot(np.real(x[i]), np.imag(x[i]), style)
 		plt.draw()
-
-	def draw_bounds(self, low, up, style):
-		for i in range(0, len(low)):
-			self.figure.plot([np.real(low[i]), np.real(up[i]), np.real(up[i]), np.real(low[i]), np.real(low[i])],
-			                 [np.imag(low[i]), np.imag(low[i]), np.imag(up[i]), np.imag(up[i]), np.imag(low[i])], self.color_wheel[i]+style)
-		plt.draw()

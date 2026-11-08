@@ -1,0 +1,164 @@
+
+{
+  "name": "IEEE 9-bus WSCC test system",
+  "version": "1.0",
+  "base": {
+    "s_base_mva": 100.0,
+    "f_hz": 60.0
+  },
+
+  "bus": [
+    {"id": 0, "name": "Bus 1 - Slack", "vn_kv": 16.5, "type": "SLACK"},
+    {"id": 1, "name": "Bus 2 - Generator", "vn_kv": 18.0, "type": "PV"},
+    {"id": 2, "name": "Bus 3 - Generator", "vn_kv": 13.8, "type": "PV"},
+    {"id": 3, "name": "Bus 4", "vn_kv": 230.0, "type": "PQ"},
+    {"id": 4, "name": "Bus 5", "vn_kv": 230.0, "type": "PQ"},
+    {"id": 5, "name": "Bus 6", "vn_kv": 230.0, "type": "PQ"},
+    {"id": 6, "name": "Bus 7", "vn_kv": 230.0, "type": "PQ"},
+    {"id": 7, "name": "Bus 8", "vn_kv": 230.0, "type": "PQ"},
+    {"id": 8, "name": "Bus 9", "vn_kv": 230.0, "type": "PQ"}
+  ],
+
+  "line": [
+    {
+      "id": 0,
+      "from_bus": 3,
+      "to_bus": 4,
+      "r_ohm": 8.993,
+      "x_ohm": 48.668,
+      "x_ground_ohm": -6696.20,
+      "max_i_ka": 0.628
+    },
+    {
+      "id": 1,
+      "from_bus": 4,
+      "to_bus": 5,
+      "r_ohm": 20.631,
+      "x_ohm": 89.930,
+      "x_ground_ohm": -2955.31,
+      "max_i_ka": 0.377
+    },
+    {
+      "id": 2,
+      "from_bus": 5,
+      "to_bus": 6,
+      "r_ohm": 6.2951,
+      "x_ohm": 53.3232,
+      "x_ground_ohm": -5062.20,
+      "max_i_ka": 0.377
+    },
+    {
+      "id": 3,
+      "from_bus": 6,
+      "to_bus": 7,
+      "r_ohm": 4.4965,
+      "x_ohm": 38.088,
+      "x_ground_ohm": -7100.67,
+      "max_i_ka": 0.628
+    },
+    {
+      "id": 4,
+      "from_bus": 7,
+      "to_bus": 8,
+      "r_ohm": 16.928,
+      "x_ohm": 85.169,
+      "x_ground_ohm": -3457.52,
+      "max_i_ka": 0.628
+    },
+    {
+      "id": 5,
+      "from_bus": 8,
+      "to_bus": 3,
+      "r_ohm": 5.290,
+      "x_ohm": 44.965,
+      "x_ground_ohm": -6011.36,
+      "max_i_ka": 0.628
+    }
+  ],
+
+  "transformer": [
+    {
+      "id": 0,
+      "hv_bus": 3,
+      "lv_bus": 0,
+      "r_ohm": 0.0,
+      "x_ohm": 30.4704,
+      "sn_mva": 250.0,
+      "tap_ratio": 1.0,
+      "tap_shift_rad": 0.0
+    },
+    {
+      "id": 1,
+      "hv_bus": 7,
+      "lv_bus": 1,
+      "r_ohm": 0.0,
+      "x_ohm": 33.0625,
+      "sn_mva": 250.0,
+      "tap_ratio": 1.0,
+      "tap_shift_rad": 0.0
+    },
+    {
+      "id": 2,
+      "hv_bus": 5,
+      "lv_bus": 2,
+      "r_ohm": 0.0,
+      "x_ohm": 30.9994,
+      "sn_mva": 300.0,
+      "tap_ratio": 1.0,
+      "tap_shift_rad": 0.0
+    }
+  ],
+
+  "generator": [
+    {
+      "id": 0,
+      "name": "Generator 1",
+      "p_mw": 72.3,
+      "bus": 0,
+      "sn_mva": 100.0,
+      "slack": true
+    },
+    {
+      "id": 1,
+      "name": "Generator 2",
+      "p_mw": 163.0,
+      "bus": 1,
+      "sn_mva": 100.0,
+      "slack": false
+    },
+    {
+      "id": 2,
+      "name": "Generator 3",
+      "p_mw": 85.0,
+      "bus": 2,
+      "sn_mva": 100.0,
+      "slack": false
+    }
+  ],
+
+  "load": [
+    {
+      "id": 0,
+      "name": "Load 5",
+      "bus": 4,
+      "p_mw": 90.0,
+      "q_mvar": 30.0
+    },
+    {
+      "id": 1,
+      "name": "Load 7",
+      "bus": 6,
+      "p_mw": 100.0,
+      "q_mvar": 35.0
+    },
+    {
+      "id": 2,
+      "name": "Load 9",
+      "bus": 8,
+      "p_mw": 125.0,
+      "q_mvar": 50.0
+    }
+  ],
+
+  "shunt": []
+}
